@@ -62,7 +62,7 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 }
 
 void UGrabber::Grab() {
-    UE_LOG(LogTemp, Error, TEXT("Grab pressed"))
+    UE_LOG(LogTemp, Warning, TEXT("Grab pressed"))
     
     /// Line trace and reach any actors with pysics body collision channel set
     GetFirstPhysicsBodyInReach();
@@ -70,7 +70,7 @@ void UGrabber::Grab() {
 }
 
 void UGrabber::Release() {
-    UE_LOG(LogTemp, Error, TEXT("Grab released"))
+    UE_LOG(LogTemp, Warning, TEXT("Grab released"))
 }
 
 const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
