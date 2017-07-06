@@ -11,7 +11,6 @@ UGrabber::UGrabber()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
 }
 
 
@@ -21,7 +20,6 @@ void UGrabber::BeginPlay()
 	Super::BeginPlay();
     FindPhysicsHandleComponent();
     SetupInputComponent();
-    
 }
 
 void UGrabber::FindPhysicsHandleComponent() {
@@ -59,14 +57,39 @@ void UGrabber::SetupInputComponent() {
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+    
+    /// Get player view point this tick
+    FVector PlayerViewPointLocation;
+    FRotator PlayerViewPointRotation;
+    GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+                                                               OUT PlayerViewPointLocation,
+                                                               OUT PlayerViewPointRotation
+                                                               );
+    FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
+    
+    if (PhysicsHandle->GrabbedComponent)
+    {
+        PhysicsHandle->SetTargetLocation(LineTraceEnd);
+    }
 }
 
 void UGrabber::Grab() {
     UE_LOG(LogTemp, Warning, TEXT("Grab pressed"))
     
     /// Line trace and reach any actors with pysics body collision channel set
-    GetFirstPhysicsBodyInReach();
+    auto HitResult = GetFirstPhysicsBodyInReach();
+    auto ComponentToGrab = HitResult.GetComponent();
+    auto ActorHit = HitResult.GetActor();
     
+    if (ActorHit)
+    {
+        PhysicsHandle->GrabComponent(
+            ComponentToGrab,
+            NAME_None,
+            ComponentToGrab->GetOwner()->GetActorLocation(),
+            true // allow rotation
+        );
+    }
 }
 
 void UGrabber::Release() {
@@ -116,7 +139,7 @@ const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
         UE_LOG(LogTemp, Warning, TEXT("Line trace hit: %s"), *(ActorHit->GetName()))
     }
     
-    return FHitResult();
+    return Hit;
 }
 
 
